@@ -1,0 +1,3 @@
+<IfModule mod_suphp.c>
+AddHandler application/x-httpd-ea-php74 .php
+</IfModule>
