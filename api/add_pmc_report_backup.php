@@ -1,0 +1,89 @@
+<?php 
+
+include($_SERVER['DOCUMENT_ROOT'].'/css/dash/esir/api/functions.php');
+header('Access-Control-Allow-Origin: *');
+header('Content-Type: application/json');
+
+date_default_timezone_set('Asia/Kolkata');
+$created_at = date('Y-m-d H:i:s');
+
+$count_visit_query = mysqli_query($con,"select id from pmc_report order by id DESC LIMIT 1");
+$count_visit = mysqli_fetch_assoc($count_visit_query);
+if($count_visit['id']){
+    $_next_visit_id = $count_visit['id'] + 1;
+}else{
+    $_next_visit_id = 1;
+}
+
+$atmid = $_POST['atm_id'];
+$visit_id = $_next_visit_id;
+
+$eng_id = $_POST['eng_id'];
+$form_start_time = $_POST['form_start_time'];
+
+$form_end_time = $created_at;
+
+$mac_id = "";
+if(isset($_POST['mac_id'])){
+  $mac_id = $_POST['mac_id'];
+}
+$location = "";
+if(isset($_POST['location'])){
+  $location = $_POST['location'];
+}
+$latitude = "";
+if(isset($_POST['latitude'])){
+  $latitude = $_POST['latitude'];
+}
+$longitude = "";
+if(isset($_POST['longitude'])){
+  $longitude = $_POST['longitude'];
+}
+
+
+$files = '';
+
+$status = 0;
+
+if($atmid!='' && $eng_id!=''){
+
+    $data = $_POST;
+// var_dump($_POST);
+
+    $testarray = array();
+    
+    foreach($data as $key=>$value)
+    {
+        // if($key!='Atm_id' && $key!='bank') {
+        
+        $_newdata = array();
+        $_newdata['key'] = $key;
+        $_newdata['value'] = trim($value);
+        array_push($testarray,$_newdata);
+        
+        // }
+    }
+
+    $testarray = json_encode($testarray);
+
+    $query_result = mysqli_query($con,"insert into pmc_report (`atmid`, `visit_id`,  `question_list`, `status`, `created_at`, `created_by`, `form_start_time`, `form_end_time`, `mac_id`, `location`, `latitude`, `longitude`) values ('".$atmid."','".$visit_id."','".$testarray."','".$status."','".$created_at."','".$eng_id."','".$form_start_time."','".$form_end_time."','".$mac_id."','".$location."','".$latitude."','".$longitude."') ");
+
+    if($query_result)
+	{
+	    $insert_id = $con->insert_id;
+   	    $array = array('Code'=>200,'res_data'=>$testarray,'new_visit_id'=>$insert_id);
+	
+	}       
+    else
+    {
+        $array = array(['Code'=>201]);
+    }
+    
+}else{
+    $array = array(['Code'=>201]);
+}
+
+    echo json_encode($array);
+
+
+?>
